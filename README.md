@@ -10,7 +10,7 @@ Etapa desenvolvida no primeiro semestre (2025/2) em **desenvolvimento do backend
 
 Pasta: [SQL](https://github.com/ligamackai/plataforma/tree/main/SQL)
 
-Notebook: [Etapa 1 - Backend em PostgreSQL](https://github.com/ligamackai/plataforma/tree/main/Etapa 1 - Backend em PostgreSQL.ipynb)
+Notebook: [Etapa 1 - Backend em PostgreSQL](https://github.com/ligamackai/plataforma/blob/main/Etapa%201%20-%20Backend%20em%20PostgreSQL.ipynb)
 
 
 ## Bucket

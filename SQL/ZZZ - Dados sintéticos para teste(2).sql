@@ -1,0 +1,195 @@
+SET search_path TO plataforma;
+
+-- ============================
+-- SEMESTRES
+-- ============================
+INSERT INTO semestre (descricao) VALUES
+  ('2024/2'),
+  ('2025/1'),
+  ('2025/2'),
+  ('2026/1');
+
+-- ============================
+-- GRUPOS (4 de estudo, 4 de trabalho)
+-- ============================
+INSERT INTO grupo (nome, descricao) VALUES
+  ('Estudo: Matemática',        'Grupo de estudo de matemática'),
+  ('Estudo: Programação',       'Grupo de estudo de programação'),
+  ('Estudo: Meio Ambiente',     'Grupo de estudo sobre meio ambiente'),
+  ('Estudo: Línguas',           'Grupo de estudo de idiomas'),
+  ('Trabalho: Comunicação',     'Célula de comunicação'),
+  ('Trabalho: Desenvolvimento', 'Célula de desenvolvimento de software'),
+  ('Trabalho: Pesquisa de Campo','Célula de pesquisa de campo'),
+  ('Trabalho: Eventos',         'Célula de organização de eventos');
+
+-- ============================
+-- PARTICIPANTES (24)
+-- ============================
+INSERT INTO participante (ra, nome) VALUES
+  ('00000001','Ana Souza'),      ('00000002','Bruno Lima'),
+  ('00000003','Carla Nunes'),    ('00000004','Diego Martins'),
+  ('00000005','Eduarda Alves'),  ('00000006','Felipe Rocha'),
+  ('00000007','Gabriela Reis'),  ('00000008','Henrique Silva'),
+  ('00000009','Isabela Dias'),   ('00000010','João Pedro'),
+  ('00000011','Karen Borges'),   ('00000012','Lucas Ferreira'),
+  ('00000013','Mariana Pires'),  ('00000014','Nicolas Teixeira'),
+  ('00000015','Olivia Castro'),  ('00000016','Paulo Henrique'),
+  ('00000017','Queila Monteiro'),('00000018','Rafael Vidal'),
+  ('00000019','Sofia Ramos'),    ('00000020','Tiago Oliveira'),
+  ('00000021','Ursula Prado'),   ('00000022','Vitor Santos'),
+  ('00000023','Wesley Faria'),   ('00000024','Yasmin Moreira');
+
+-- ============================
+-- OCORREU (uma ocorrência por par semestre x grupo)
+-- ============================
+INSERT INTO ocorreu (semestre, grupo)
+SELECT s.id, g.id
+FROM semestre s
+CROSS JOIN grupo g;
+
+-- ============================
+-- ENCONTROS (todos os grupos têm encontros)
+-- - 2 encontros por ocorrência
+-- - datas base por semestre:
+--   2024/2 -> 2024-08-01
+--   2025/1 -> 2025-03-01
+--   2025/2 -> 2025-08-01
+--   2026/1 -> 2026-03-01
+-- ============================
+WITH bases AS (
+  SELECT
+    s.id AS semestre_id,
+    s.descricao,
+    CASE s.descricao
+      WHEN '2024/2' THEN TIMESTAMPTZ '2024-08-01 19:00:00-03'
+      WHEN '2025/1' THEN TIMESTAMPTZ '2025-03-01 19:00:00-03'
+      WHEN '2025/2' THEN TIMESTAMPTZ '2025-08-01 19:00:00-03'
+      WHEN '2026/1' THEN TIMESTAMPTZ '2026-03-01 19:00:00-03'
+    END AS base_dt
+  FROM semestre s
+),
+alvos AS (
+  SELECT
+    o.id AS ocorrencia_id,
+    g.nome AS grupo_nome,
+    b.base_dt,
+    row_number() OVER (PARTITION BY o.semestre, o.grupo ORDER BY o.id) AS rn
+  FROM ocorreu o
+  JOIN grupo g ON g.id = o.grupo
+  JOIN bases b ON b.semestre_id = o.semestre
+)
+INSERT INTO encontro (ocorrencia, inicio, fim, tema, resumo)
+SELECT
+  a.ocorrencia_id,
+  a.base_dt + make_interval(days => 7 * n)             AS inicio,
+  a.base_dt + make_interval(days => 7 * n, hours => 2) AS fim,
+  CONCAT(a.grupo_nome, ' - Sessão ', n+1)              AS tema,
+  'Discussões e atividades do encontro ' || (n+1)      AS resumo
+FROM alvos a
+CROSS JOIN generate_series(0,1) AS n;
+
+-- ============================
+-- TAREFAS (apenas grupos de trabalho) - 2 por ocorrência
+-- ============================
+WITH bases AS (
+  SELECT s.id AS semestre_id, descricao,
+         CASE descricao
+           WHEN '2024/2' THEN TIMESTAMPTZ '2024-08-05 09:00:00-03'
+           WHEN '2025/1' THEN TIMESTAMPTZ '2025-03-05 09:00:00-03'
+           WHEN '2025/2' THEN TIMESTAMPTZ '2025-08-05 09:00:00-03'
+           WHEN '2026/1' THEN TIMESTAMPTZ '2026-03-05 09:00:00-03'
+         END AS base_dt
+  FROM semestre s
+),
+work_oc AS (
+  SELECT o.id AS ocorrencia_id, g.nome AS grupo_nome, b.base_dt
+  FROM ocorreu o
+  JOIN grupo g ON g.id = o.grupo
+  JOIN bases b ON b.semestre_id = o.semestre
+  WHERE g.nome LIKE 'Trabalho:%'
+)
+INSERT INTO tarefa (ocorrencia, inicio, prazo, tema, descricao)
+SELECT w.ocorrencia_id,
+       w.base_dt + make_interval(days => 10 * n)           AS inicio,
+       w.base_dt + make_interval(days => (10 * n + 5))     AS prazo,
+       CONCAT(w.grupo_nome, ' - Tarefa ', n+1)             AS tema,
+       'Executar atividade prática #' || (n+1)             AS descricao
+FROM work_oc w
+CROSS JOIN generate_series(0,1) AS n;
+
+-- ============================
+-- PARTICIPOU (presenças em encontros)
+-- regra: cerca de 1/3 dos participantes por encontro, variando por id
+-- ============================
+INSERT INTO participou (horas, participante, encontro, confirmado)
+SELECT 2                                 AS horas,
+       p.id                               AS participante,
+       e.id                               AS encontro,
+       ( (p.id + e.id) % 2 = 0 )          AS confirmado
+FROM encontro e
+JOIN participante p ON (p.id % 3) = (e.id % 3);
+
+-- ============================
+-- APRESENTOU (subset de participantes que apresentaram em encontros)
+-- regra: bem menor (aprox 2 por encontro)
+-- ============================
+INSERT INTO apresentou (horas, participante, encontro, valido, confirmado)
+SELECT 1,
+       p.id,
+       e.id,
+       TRUE,
+       ((p.id + e.id) % 4 = 0)
+FROM encontro e
+JOIN participante p ON (p.id % 12) = (e.id % 12);
+
+-- ============================
+-- EXECUTOU (execução prática em encontros) — só para grupos de trabalho
+-- ============================
+INSERT INTO executou (horas, participante, tarefa, valido, confirmado)
+SELECT
+  1,
+  p.id,
+  t.id,
+  TRUE,
+  ((p.id + t.id) % 5 = 0)  -- (antes estava e.id; aqui deve ser t.id)
+FROM tarefa t
+JOIN ocorreu o ON o.id = t.ocorrencia
+JOIN grupo g   ON g.id = o.grupo
+JOIN participante p ON (p.id % 4) = (t.id % 4)
+WHERE g.nome LIKE 'Trabalho:%';
+
+-- ============================
+-- CARGOS (por semestre: presidente e marketing)
+-- ============================
+
+INSERT INTO tipo_cargo (nome, descricao, horas) VALUES
+('presidente',  'Responsável máximo pela organização e representação institucional.', 8),
+('diretor',     'Auxilia na gestão estratégica e organização das atividades.', 6),
+('supervisor',  'Orienta e acompanha o trabalho dos participantes.', 4),
+('marketing',   'Responsável pela comunicação e divulgação das atividades.', 6),
+('coordenador', 'Coordena um grupo ou projeto específico.', 4);
+
+INSERT INTO cargo (horas, participante, semestre, tipo, inicio, fim, ativo, confirmado)
+SELECT
+    c.horas,
+    c.participante,
+    s.id,
+    tc.id,
+    c.ini,
+    c.fim,
+    TRUE,
+    TRUE
+FROM (
+VALUES
+(8, 1, '2024/2', 'presidente', TIMESTAMPTZ '2024-08-01 00:00:00-03', TIMESTAMPTZ '2024-12-20 23:59:59-03'),
+(6, 2, '2024/2', 'marketing',  TIMESTAMPTZ '2024-08-01 00:00:00-03', TIMESTAMPTZ '2024-12-20 23:59:59-03'),
+(8, 3, '2025/1', 'presidente', TIMESTAMPTZ '2025-03-01 00:00:00-03', TIMESTAMPTZ '2025-07-15 23:59:59-03'),
+(6, 4, '2025/1', 'marketing',  TIMESTAMPTZ '2025-03-01 00:00:00-03', TIMESTAMPTZ '2025-07-15 23:59:59-03'),
+(8, 5, '2025/2', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
+(6, 6, '2025/2', 'marketing',  TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
+(8, 7, '2026/1', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
+(6, 8, '2026/1', 'marketing',  TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03')
+) AS c(horas, participante, semestre_desc, tipo_nome, ini, fim)
+
+JOIN semestre s ON s.descricao = c.semestre_desc
+JOIN tipo_cargo tc ON tc.nome = c.tipo_nome;

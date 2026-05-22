@@ -26,4 +26,4 @@ Notebook: [Etapa 2 - Frontend com bucket](https://github.com/ligamackai/platafor
 
 Recebe as requisições e distribui em endpoints dinâmicos, o que permite o desenvolvimento modular e paralelo da plataforma.
 
-Arquivo: [imagem.tar.gz](https://github.com/ligamackai/plataforma/tree/main/imagem.tar.gz)
+Pasta: [imagem](https://github.com/ligamackai/plataforma/tree/main/imagem)

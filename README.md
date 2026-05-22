@@ -19,6 +19,8 @@ Guarda módulos/arquivos para compor páginas específicas e permite atualizaç�
 
 Esse etapa está sendo desenvolvida no segundo semestre (2026/1) em **desenvolvimento do frontend**.
 
+Pasta: [imagem/root](https://github.com/ligamackai/plataforma/tree/main/imagem/root)
+
 Notebook: [Etapa 2 - Frontend com bucket](https://github.com/ligamackai/plataforma/blob/main/Etapa%202%20-%20Frontend%20com%20bucket)
 
 

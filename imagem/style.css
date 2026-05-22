@@ -1,0 +1,267 @@
+/* =========================
+   RESET
+========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   BASE
+========================= */
+body {
+    background-color: #0f0f12;
+    margin: 0;
+    font-family: system-ui;
+    color: #dfd2ce;
+    display: flex;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: #ccc;
+}
+
+/* =========================
+   SIDEBAR (MENU)
+========================= */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    background-color: #8B0000; /* vermelho escuro */
+    color: #fff;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px;
+    overflow-y: scroll;
+}
+
+.sidebar h1 {
+    font-size: 22px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.sidebar a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+
+.sidebar a:hover {
+    background-color: #B22222; /* vermelho médio */
+}
+
+.sidebar .logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sidebar .logo img {
+    width: 200px;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+.main {
+    margin-left: 240px;
+    padding: 50px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   HEADER
+========================= */
+.header {
+    background-color: #B22222;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   CARDS
+========================= */
+.card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* =========================
+   BOTÕES
+========================= */
+.button {
+    background-color: #8B0000;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.button:hover {
+    background-color: #B22222;
+}
+
+.side-btn {
+	background: linear-gradient(135deg, #b30000, #ff4d4d);
+	color: white;
+	text-decoration: none;
+	padding: 10px 16px;
+	border-radius: 10px;
+	font-weight: 600;
+	font-size: 14px;
+	transition: 0.2s;
+	box-shadow: 0 4px 12px rgba(179, 0, 0, 0.4);
+    margin: 4px 12px;
+}
+
+.side-btn:hover {
+	transform: translateY(-2px);
+	background: linear-gradient(135deg, #cc0000, #ff6666);
+}
+
+.side-btn:active {
+	transform: scale(0.96);
+	background: #990000;
+}
+
+/* =========================
+   LINKS
+========================= */
+a {
+    color: #8B0000;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* =========================
+   TABELA
+========================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: black;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th {
+    background-color: #8B0000;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main {
+        margin-left: 200px;
+    }
+}
+
+@media (max-width: 600px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+
+    .main {
+        margin-left: 0;
+    }
+}
+
+
+
+/* =========================
+   FORMS
+========================= */
+form{
+    background:rgba(255,255,255,0.3);
+    padding:25px;
+    border-radius:10px;
+    max-width:500px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+label{
+    font-weight:600;
+    font-size:14px;
+    color:#eee;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:10px;
+    margin-top:6px;
+    margin-bottom:18px;
+    border:1px solid #d0d7de;
+    border-radius:6px;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+textarea{
+    resize:vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    outline:none;
+    border-color:#4a90e2;
+    box-shadow:0 0 0 2px rgba(74,144,226,0.15);
+}
+
+button{
+    background:#2d7ef7;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:6px;
+    font-size:15px;
+    cursor:pointer;
+    transition:background 0.2s;
+}
+
+button:hover{
+    background:#1f6fe0;
+}

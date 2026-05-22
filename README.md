@@ -19,7 +19,7 @@ Guarda módulos/arquivos para compor páginas específicas e permite atualizaç�
 
 Esse etapa está sendo desenvolvida no segundo semestre (2026/1) em **desenvolvimento do frontend**.
 
-Pasta: [imagem/root](https://github.com/ligamackai/plataforma/tree/main/imagem/root)
+Pasta: [imagem/root](https://github.com/ligamackai/plataforma/tree/main/imagem/root) (Aqui você pode ver os arquivos já incorporados na imagem Docker)
 
 Notebook: [Etapa 2 - Frontend com bucket](https://github.com/ligamackai/plataforma/blob/main/Etapa%202%20-%20Frontend%20com%20bucket)
 
@@ -29,3 +29,7 @@ Notebook: [Etapa 2 - Frontend com bucket](https://github.com/ligamackai/platafor
 Recebe as requisições e distribui em endpoints dinâmicos, o que permite o desenvolvimento modular e paralelo da plataforma.
 
 Pasta: [imagem](https://github.com/ligamackai/plataforma/tree/main/imagem)
+
+Deploy: [deploy.sh](https://github.com/ligamackai/plataforma/blob/main/deploy.sh)
+
+

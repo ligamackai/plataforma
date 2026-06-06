@@ -691,28 +691,41 @@ async def executar_procedure(
         # 2 - Interpretar parâmetros
         parametros_pg = []
         for r in rows:
-            raw = r["arg"].strip()  # Ex: "IN in_executado_por integer"
-
+            raw = r["arg"].strip()
             parts = raw.split()
             modo = parts[0].upper()
             pg_name = parts[1]
-            tipo = parts[2]
-
+            
+            # Detectar se tem DEFAULT (a palavra "DEFAULT" aparece depois do tipo)
+            has_default = "DEFAULT" in parts
+            
+            # Reconstruir o tipo corretamente (pode ser composto como "character varying")
+            # O tipo vai de parts[2] até encontrar "DEFAULT" ou até o final
+            tipo_parts = []
+            for p in parts[2:]:
+                if p == "DEFAULT":
+                    break
+                tipo_parts.append(p)
+            tipo = " ".join(tipo_parts)
+            
             clean_name = pg_name
             if clean_name.startswith("in_"):
-                clean_name = clean_name[3:]  # remove o prefixo
-
+                clean_name = clean_name[3:]
+        
             parametros_pg.append({
                 "mode": modo,
                 "pg_name": pg_name,
                 "clean_name": clean_name,
-                "type": tipo
+                "type": tipo,
+                "has_default": has_default  # NOVO
             })
 
         # 3 - Verificar obrigatórios
         obrigatorios = [
             p for p in parametros_pg
-            if p["mode"] == "IN" and p["pg_name"] != "in_executado_por"
+            if p["mode"] == "IN" 
+            and p["pg_name"] != "in_executado_por"
+            and not p["has_default"]  # ← IGNORAR parâmetros com DEFAULT
         ]
 
         faltando = [
@@ -760,6 +773,12 @@ async def executar_procedure(
 
                 elif tipo in ("decimal", "numeric"):
                     valor = float(str(valor).replace(",", "."))
+
+                elif tipo in ("boolean", "bool"):          # ← NOVO
+                    if isinstance(valor, str):
+                        valor = valor.lower() in ("true", "1", "yes", "on")
+                    else:
+                        valor = bool(valor)
 
                 elif tipo in (
                     "timestamp",

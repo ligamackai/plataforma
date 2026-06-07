@@ -13,7 +13,15 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     semestre_ocorreu INT;
+    tipo_id BIGINT;
 BEGIN
+    -- Buscar o ID do tipo_cargo pelo nome
+    SELECT id INTO tipo_id FROM tipo_cargo WHERE nome = in_tipo;
+
+    IF tipo_id IS NULL THEN
+        RAISE EXCEPTION 'Tipo de cargo "%" não encontrado.', in_tipo;
+    END IF;
+
     IF in_horas IS NOT NULL AND in_horas < 0 THEN 
         RAISE EXCEPTION 'O número de horas não pode ser negativo';
     END IF;
@@ -32,10 +40,10 @@ BEGIN
 
     IF in_inicio IS NULL THEN
         INSERT INTO cargo (tipo, horas, participante, semestre, ocorrencia, ativo, confirmado)
-        VALUES (in_tipo::tipo_cargo, in_horas, in_participante, in_semestre, in_ocorrencia_id, TRUE, FALSE);
+        VALUES (tipo_id, in_horas, in_participante, in_semestre, in_ocorrencia_id, TRUE, FALSE);
     ELSE 
         INSERT INTO cargo (tipo, horas, participante, semestre, inicio, ocorrencia, ativo, confirmado)
-        VALUES (in_tipo::tipo_cargo, in_horas, in_participante, in_semestre, in_inicio, in_ocorrencia_id, TRUE, FALSE);
+        VALUES (tipo_id, in_horas, in_participante, in_semestre, in_inicio, in_ocorrencia_id, TRUE, FALSE);
     END IF;
 
     INSERT INTO log (rotulo, dados)
@@ -44,6 +52,7 @@ BEGIN
         jsonb_build_object(
             'executado_por', in_executado_por,
             'tipo',          in_tipo,
+            'tipo_id',       tipo_id,
             'participante',  in_participante,
             'semestre',      in_semestre,
             'ocorrencia_id', in_ocorrencia_id,

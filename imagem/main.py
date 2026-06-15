@@ -109,6 +109,10 @@ async def teste(request: Request):
 # /send/code
 # ============================================================
 
+# ============================================================
+# /send/code
+# ============================================================
+
 @app.get("/send/code/")
 async def send_email_code(
     to: str,
@@ -116,6 +120,20 @@ async def send_email_code(
     session: AsyncSession = Depends(get_session),
 ):
     try:
+        # Se tem @, é email completo; se não, é RA
+        if "@" in to:
+            destino = to.strip().lower()
+        else:
+            destino = f"{to}@mackenzista.com.br"
+
+        # Validar dominio permitido
+        dominio = destino.split("@")[1] if "@" in destino else ""
+        if dominio not in emails_aceitos:
+            return {
+                "status": "error",
+                "message": "Domínio de e-mail não permitido. Use @mackenzista.com.br ou @mackenzie.br."
+            }
+
         codigo = gerar_codigo()
         smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
         smtp_port = int(os.getenv("SMTP_PORT", 587))
@@ -125,8 +143,6 @@ async def send_email_code(
 
         if not smtp_user or not smtp_password:
             raise Exception("SMTP_USER ou SMTP_PASSWORD não configurados")
-
-        destino = f"{to}@mackenzista.com.br"
 
         html = f"""
 <!DOCTYPE html>
@@ -237,7 +253,6 @@ async def send_email_code(
         email_str = destino
 
         # Salvar código no banco de dados
-
         sql_email = text("""
         WITH ins AS (
             INSERT INTO email (email)
@@ -277,7 +292,6 @@ async def send_email_code(
         }
 
     except Exception as e:
-
         return {
             "status": "error",
             "message": str(e)
@@ -289,48 +303,78 @@ async def send_email_code(
 
 @app.post("/realizar/login/")
 async def realizar_login(
-    ra: str = Form(...),
+    identificador: str = Form(...),
     senha: str = Form(...),
     request: Request = None,
     session: AsyncSession = Depends(get_session),
 ):
     try:
+        participante_id = None
+        senha_db = None
 
         # ---------------------------------------------------
-        # 1 - validar RA
+        # 1 - identificar se é RA ou email
         # ---------------------------------------------------
-        if not re.fullmatch(r"[0-9]{8}", ra):
+        if "@" in identificador:
+            # É email: buscar na tabela email -> participante
+            email_lower = identificador.strip().lower()
+
+            # Validar dominio permitido
+            dominio = email_lower.split("@")[1] if "@" in email_lower else ""
+            if dominio not in emails_aceitos:
+                return {
+                    "status": "error",
+                    "message": "Credenciais inválidas"
+                }
+
+            row = (
+                await session.execute(
+                    text("""
+                    SELECT p.id, p.senha
+                    FROM participante p
+                    JOIN email e ON e.participante = p.id
+                    WHERE e.email = :email
+                    LIMIT 1
+                    """),
+                    {"email": email_lower}
+                )
+            ).mappings().first()
+
+            if row:
+                participante_id = row["id"]
+                senha_db = row["senha"]
+        else:
+            # É RA: validar 8 dígitos e buscar por RA
+            if not re.fullmatch(r"[0-9]{8}", identificador):
+                return {
+                    "status": "error",
+                    "message": "Credenciais inválidas"
+                }
+
+            row = (
+                await session.execute(
+                    text("""
+                    SELECT id, senha
+                    FROM participante
+                    WHERE ra = :ra
+                    LIMIT 1
+                    """),
+                    {"ra": identificador}
+                )
+            ).mappings().first()
+
+            if row:
+                participante_id = row["id"]
+                senha_db = row["senha"]
+
+        if not participante_id or not senha_db:
             return {
                 "status": "error",
                 "message": "Credenciais inválidas"
             }
 
         # ---------------------------------------------------
-        # 2 - buscar usuário
-        # ---------------------------------------------------
-        row = (
-            await session.execute(
-                text("""
-                SELECT id, senha
-                FROM participante
-                WHERE ra = :ra
-                LIMIT 1
-                """),
-                {"ra": ra}
-            )
-        ).mappings().first()
-
-        if not row:
-            return {
-                "status": "error",
-                "message": "Credenciais inválidas"
-            }
-
-        participante_id = row["id"]
-        senha_db = row["senha"]
-
-        # ---------------------------------------------------
-        # 3 - verificar senha
+        # 2 - verificar senha
         # ---------------------------------------------------
         if not verificar_senha(senha, senha_db):
             return {
@@ -339,11 +383,10 @@ async def realizar_login(
             }
 
         # ---------------------------------------------------
-        # 4 - vincular sessão ao dispositivo
+        # 3 - vincular sessão ao dispositivo
         # ---------------------------------------------------
         dispositivo = request.state.dispositivo_id
 
-        # remove sessão antiga (boa prática)
         await session.execute(
             text("""
             DELETE FROM sessao
@@ -352,7 +395,6 @@ async def realizar_login(
             {"dispositivo": dispositivo}
         )
 
-        # cria nova sessão
         await session.execute(
             text("""
             INSERT INTO sessao (participante, dispositivo)
@@ -366,9 +408,6 @@ async def realizar_login(
 
         await session.commit()
 
-        # ---------------------------------------------------
-        # 5 - resposta JSON
-        # ---------------------------------------------------
         return {
             "status": "ok",
             "message": "Login realizado com sucesso",
@@ -382,6 +421,7 @@ async def realizar_login(
             "message": str(e)
         }
 
+
 # ============================================================
 # /realizar/cadastro
 # ============================================================
@@ -392,23 +432,36 @@ async def realizar_cadastro(
     codigo: str = Form(...),
     nome: str = Form(...),
     senha: str = Form(...),
+    email: str = Form(None),
     request: Request = None,
     session: AsyncSession = Depends(get_session),
 ):
     try:
-
         # ---------------------------------------------------
         # 1 - validar RA
         # ---------------------------------------------------
         if not re.fullmatch(r"[0-9]{8}", ra):
             return {"status": "error", "message": "RA inválido. Deve conter 8 dígitos."}
 
-        email = f"{ra}@mackenzista.com.br"
+        # ---------------------------------------------------
+        # 2 - determinar email
+        # ---------------------------------------------------
+        if email:
+            email_destino = email.strip().lower()
+            # Validar dominio permitido
+            dominio = email_destino.split("@")[1] if "@" in email_destino else ""
+            if dominio not in emails_aceitos:
+                return {
+                    "status": "error",
+                    "message": "Domínio de e-mail não permitido. Use @mackenzista.com.br ou @mackenzie.br."
+                }
+        else:
+            email_destino = f"{ra}@mackenzista.com.br"
 
         dispositivo = request.state.dispositivo_id
 
         # ---------------------------------------------------
-        # 2 - verificar código válido
+        # 3 - verificar código válido
         # ---------------------------------------------------
         sql_codigo = text("""
         SELECT ce.id
@@ -426,7 +479,7 @@ async def realizar_cadastro(
             await session.execute(
                 sql_codigo,
                 {
-                    "email": email,
+                    "email": email_destino,
                     "codigo": codigo,
                     "dispositivo": dispositivo
                 }
@@ -442,13 +495,12 @@ async def realizar_cadastro(
         codigo_id = row[0]
 
         # ---------------------------------------------------
-        # 3 - hash da senha
+        # 4 - hash da senha
         # ---------------------------------------------------
-
         senha_hash = hash_senha(senha)
 
         # ---------------------------------------------------
-        # 4 - inserir participante
+        # 5 - inserir participante
         # ---------------------------------------------------
         sql_participante = text("""
         INSERT INTO participante (ra, nome, senha)
@@ -468,7 +520,24 @@ async def realizar_cadastro(
         ).scalar()
 
         # ---------------------------------------------------
-        # 5 - marcar código como validado
+        # 6 - vincular email ao participante
+        # ---------------------------------------------------
+        sql_vincular_email = text("""
+        UPDATE email
+        SET participante = :participante
+        WHERE email = :email
+        """)
+
+        await session.execute(
+            sql_vincular_email,
+            {
+                "participante": participante_id,
+                "email": email_destino
+            }
+        )
+
+        # ---------------------------------------------------
+        # 7 - marcar código como validado
         # ---------------------------------------------------
         sql_validar = text("""
         UPDATE codigo_email
@@ -499,13 +568,12 @@ async def realizar_cadastro(
         }
 
     except Exception as e:
-
         await session.rollback()
-
         return {
             "status": "error",
             "message": str(e)
         }
+
 
 # ============================================================
 # /realizar/recuperar-senha
@@ -513,18 +581,62 @@ async def realizar_cadastro(
 
 @app.post("/realizar/recuperar-senha/")
 async def recuperar_senha(
-    ra: str = Form(...),
+    identificador: str = Form(...),
     codigo: str = Form(...),
     senha: str = Form(...),
     request: Request = None,
     session: AsyncSession = Depends(get_session),
 ):
     try:
-
-        email = f"{ra}@mackenzista.com.br"
         dispositivo = request.state.dispositivo_id
 
-        # validar código
+        # ---------------------------------------------------
+        # 1 - determinar email e RA
+        # ---------------------------------------------------
+        if "@" in identificador:
+            email_destino = identificador.strip().lower()
+
+            # Validar dominio permitido
+            dominio = email_destino.split("@")[1] if "@" in email_destino else ""
+            if dominio not in emails_aceitos:
+                return {
+                    "status": "error",
+                    "message": "Domínio de e-mail não permitido."
+                }
+
+            # Buscar RA do participante vinculado a este email
+            row = (
+                await session.execute(
+                    text("""
+                    SELECT p.ra
+                    FROM participante p
+                    JOIN email e ON e.participante = p.id
+                    WHERE e.email = :email
+                    LIMIT 1
+                    """),
+                    {"email": email_destino}
+                )
+            ).mappings().first()
+
+            if not row:
+                return {
+                    "status": "error",
+                    "message": "Código inválido ou expirado."
+                }
+
+            ra = row["ra"]
+        else:
+            ra = identificador
+            if not re.fullmatch(r"[0-9]{8}", ra):
+                return {
+                    "status": "error",
+                    "message": "Código inválido ou expirado."
+                }
+            email_destino = f"{ra}@mackenzista.com.br"
+
+        # ---------------------------------------------------
+        # 2 - validar código
+        # ---------------------------------------------------
         row = (
             await session.execute(
                 text("""
@@ -539,7 +651,7 @@ async def recuperar_senha(
                 LIMIT 1
                 """),
                 {
-                    "email": email,
+                    "email": email_destino,
                     "codigo": codigo,
                     "dispositivo": dispositivo
                 }
@@ -554,7 +666,9 @@ async def recuperar_senha(
 
         codigo_id = row[0]
 
-        # atualizar senha
+        # ---------------------------------------------------
+        # 3 - atualizar senha
+        # ---------------------------------------------------
         senha_hash = hash_senha(senha)
 
         await session.execute(
@@ -589,6 +703,7 @@ async def recuperar_senha(
             "status": "error",
             "message": str(e)
         }
+
 
 # ============================================================
 # /realizar/logout

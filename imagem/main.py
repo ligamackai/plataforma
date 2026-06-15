@@ -25,6 +25,8 @@ from email.message import EmailMessage
 import secrets
 import hashlib
 
+emails_aceitos = ["mackenzista.com.br", "mackenzie.br"]
+
 # ============================================================
 # Helpers
 # ============================================================

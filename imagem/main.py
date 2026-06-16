@@ -77,6 +77,27 @@ def verificar_senha(senha_digitada: str, senha_db: str):
 
     return key.hex() == hash_hex
 
+async def verificar_permissao(
+    session: AsyncSession,
+    p_participante: int,
+    p_permissao: int,
+    p_grupo: Optional[int] = None,
+) -> bool:
+    try:
+        if p_grupo is not None:
+            await session.execute(
+                text(f'SELECT "{DB_SCHEMA}".verificar_permissao(:p, :perm, :g)'),
+                {"p": p_participante, "perm": p_permissao, "g": p_grupo}
+            )
+        else:
+            await session.execute(
+                text(f'SELECT "{DB_SCHEMA}".verificar_permissao(:p, :perm)'),
+                {"p": p_participante, "perm": p_permissao}
+            )
+        return True
+    except Exception:
+        return False
+
 # ============================================================
 # FastAPI
 # ============================================================

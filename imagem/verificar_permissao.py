@@ -50,4 +50,5 @@ async def verificar_permissao(
             )
         return True
     except Exception:
+        await db.rollback()
         return False

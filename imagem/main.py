@@ -96,6 +96,7 @@ async def verificar_permissao(
             )
         return True
     except Exception:
+        await session.rollback()
         return False
 
 # ============================================================

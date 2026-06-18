@@ -126,14 +126,17 @@ async def teste(request: Request):
         "participante": request.state.participante_id,
         "dispositivo": request.state.dispositivo_id
     }
+    
+
+# ============================================================
+# /modo -> desenvolvimento <> produção
+# ============================================================
 
 @app.get("/modo/desenvolvimento")
 async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
     try:
-        await session.execute(
-            text("ALTER DATABASE :dbname SET plataforma.environment_mode = 'development'"),
-            {"dbname": DB_NAME}
-        )
+        sql = text(f'ALTER DATABASE "{DB_NAME}" SET plataforma.environment_mode = \'development\'')
+        await session.execute(sql)
         await session.commit()
         return {
             "status": "ok",
@@ -147,17 +150,11 @@ async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
         }
 
 
-# ============================================================
-# /modo -> desenvolvimento <> produção
-# ============================================================
-
 @app.get("/modo/producao")
 async def modo_producao(session: AsyncSession = Depends(get_session)):
     try:
-        await session.execute(
-            text("ALTER DATABASE :dbname SET plataforma.environment_mode = 'production'"),
-            {"dbname": DB_NAME}
-        )
+        sql = text(f'ALTER DATABASE "{DB_NAME}" SET plataforma.environment_mode = \'production\'')
+        await session.execute(sql)
         await session.commit()
         return {
             "status": "ok",

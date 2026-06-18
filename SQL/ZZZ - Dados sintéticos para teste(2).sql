@@ -162,7 +162,7 @@ WHERE g.nome LIKE 'Trabalho:%';
 -- PERMISSÕES
 -- ============================
 
-INSERT INTO plataforma.permissao (nome)
+INSERT INTO permissao (nome)
 VALUES
     ('supervisão'),
     ('coordenação')
@@ -173,11 +173,13 @@ DO NOTHING;
 -- CARGOS
 -- ============================
 
-INSERT INTO tipo_cargo (nome, descricao, horas) VALUES
+INSERT INTO tipo_cargo (nome, descricao, horas)
+VALUES
     ('Supervisor',  'Professores da universidade vinculados ao grupo de estudo.', 0),
     ('Presidente',  'Responsável máximo pela organização e representação institucional.', 8),
-    ('Coordenador', 'Auxilia na gestão estratégica e organização das atividades.', 6);
-
+    ('Coordenador', 'Auxilia na gestão estratégica e organização das atividades.', 6)
+ON CONFLICT (nome)
+DO NOTHING;
 
 -- ============================
 -- CONCESSÕES
@@ -200,11 +202,10 @@ JOIN tipo_cargo tc
     ON tc.nome = x.tipo_cargo_nome
 ON CONFLICT DO NOTHING;
 
-
 -- ============================
 -- CARGOS DOS PARTICIPANTES
 -- ============================
-  
+
 INSERT INTO cargo (horas, participante, semestre, tipo, inicio, fim, ativo, confirmado)
 SELECT
     c.horas,
@@ -216,12 +217,14 @@ SELECT
     TRUE,
     TRUE
 FROM (
-VALUES
-(8, 1, '2024/2', 'presidente', TIMESTAMPTZ '2024-08-01 00:00:00-03', TIMESTAMPTZ '2024-12-20 23:59:59-03'),
-(8, 3, '2025/1', 'presidente', TIMESTAMPTZ '2025-03-01 00:00:00-03', TIMESTAMPTZ '2025-07-15 23:59:59-03'),
-(8, 5, '2025/2', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
-(8, 7, '2026/1', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03')
+    VALUES
+        (8, 1, '2024/2', 'Presidente', TIMESTAMPTZ '2024-08-01 00:00:00-03', TIMESTAMPTZ '2024-12-20 23:59:59-03'),
+        (8, 3, '2025/1', 'Presidente', TIMESTAMPTZ '2025-03-01 00:00:00-03', TIMESTAMPTZ '2025-07-15 23:59:59-03'),
+        (8, 5, '2025/2', 'Presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
+        (8, 7, '2026/1', 'Presidente', TIMESTAMPTZ '2026-03-01 00:00:00-03', TIMESTAMPTZ '2026-07-15 23:59:59-03')
 ) AS c(horas, participante, semestre_desc, tipo_nome, ini, fim)
-
-JOIN semestre s ON s.descricao = c.semestre_desc
-JOIN tipo_cargo tc ON tc.nome = c.tipo_nome;
+JOIN semestre s
+    ON s.descricao = c.semestre_desc
+JOIN tipo_cargo tc
+    ON tc.nome = c.tipo_nome
+ON CONFLICT DO NOTHING;

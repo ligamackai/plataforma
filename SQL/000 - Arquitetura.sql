@@ -271,7 +271,7 @@ DO UPDATE SET
 
 CREATE OR REPLACE FUNCTION verificar_permissao(
     p_participante BIGINT,
-    p_permissao BIGINT,
+    p_permissao VARCHAR,        -- mudou de BIGINT para VARCHAR (nome da permissão)
     p_grupo BIGINT DEFAULT NULL
 )
 RETURNS void
@@ -280,73 +280,60 @@ AS $$
 DECLARE
     v_mode TEXT;
     v_ok BOOLEAN;
+    v_permissao_id BIGINT;
 BEGIN
+    -- Buscar o ID da permissão pelo nome
+    SELECT id INTO v_permissao_id
+    FROM plataforma.permissao
+    WHERE nome = p_permissao;
 
-    ---------------------------------------------------------------
+    IF v_permissao_id IS NULL THEN
+        RAISE EXCEPTION 'Permissão "%" não encontrada.', p_permissao
+        USING ERRCODE = '42501';
+    END IF;
+
     -- ler modo do ambiente pela tabela de configuração
-    ---------------------------------------------------------------
-
-    SELECT c.valor
-    INTO v_mode
+    SELECT c.valor INTO v_mode
     FROM plataforma.configuracao c
     WHERE c.chave = 'environment_mode';
 
     v_mode := COALESCE(v_mode, 'production');
 
-    ---------------------------------------------------------------
     -- ambiente de desenvolvimento libera tudo
-    ---------------------------------------------------------------
-
     IF v_mode = 'development' THEN
         RETURN;
     END IF;
 
-    ---------------------------------------------------------------
     -- regra 1: permissão global
-    ---------------------------------------------------------------
-
     IF EXISTS (
         SELECT 1
         FROM plataforma.concessao c
-        WHERE c.permissao = p_permissao
+        WHERE c.permissao = v_permissao_id
         AND c.tipo_cargo IS NULL
         AND c.abrangencia = 'ampla'
     ) THEN
         RETURN;
     END IF;
 
-    ---------------------------------------------------------------
     -- regra 2: verificar cargos ativos
-    ---------------------------------------------------------------
-
-    SELECT TRUE
-    INTO v_ok
+    SELECT TRUE INTO v_ok
     FROM plataforma.cargo cg
-    JOIN plataforma.concessao cs
-        ON cs.tipo_cargo = cg.tipo
-    LEFT JOIN plataforma.ocorreu oc
-        ON oc.id = cg.ocorrencia
+    JOIN plataforma.concessao cs ON cs.tipo_cargo = cg.tipo
+    LEFT JOIN plataforma.ocorreu oc ON oc.id = cg.ocorrencia
     WHERE
         cg.participante = p_participante
         AND cg.ativo = TRUE
         AND cg.confirmado = TRUE
         AND (cg.fim IS NULL OR cg.fim > NOW())
         AND cg.inicio <= NOW()
-        AND cs.permissao = p_permissao
+        AND cs.permissao = v_permissao_id
         AND (
-
-            -- abrangência ampla
             cs.abrangencia = 'ampla'
-
-            OR
-
-            -- abrangência restrita
-            (
+            OR (
                 cs.abrangencia = 'restrita'
                 AND cg.ocorrencia IS NOT NULL
                 AND oc.grupo = p_grupo
             )
-
         )
     LIMIT 1;
 
@@ -354,12 +341,8 @@ BEGIN
         RETURN;
     END IF;
 
-    ---------------------------------------------------------------
     -- acesso negado
-    ---------------------------------------------------------------
-
     RAISE EXCEPTION 'Acesso negado'
     USING ERRCODE = '42501';
-
 END;
 $$;

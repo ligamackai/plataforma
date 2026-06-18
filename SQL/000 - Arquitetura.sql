@@ -256,7 +256,18 @@ BEGIN
 END;
 $$;
 
-ALTER DATABASE postgres SET plataforma.environment_mode = 'development';
+CREATE TABLE IF NOT EXISTS plataforma.configuracao (
+    chave TEXT PRIMARY KEY,
+    valor TEXT NOT NULL,
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO plataforma.configuracao (chave, valor)
+VALUES ('environment_mode', 'development')
+ON CONFLICT (chave)
+DO UPDATE SET
+    valor = EXCLUDED.valor,
+    atualizado_em = NOW();
 
 CREATE OR REPLACE FUNCTION verificar_permissao(
     p_participante BIGINT,
@@ -271,14 +282,21 @@ DECLARE
     v_ok BOOLEAN;
 BEGIN
 
-    -- ler modo do ambiente
-    v_mode := current_setting('plataforma.environment_mode', true);
+    ---------------------------------------------------------------
+    -- ler modo do ambiente pela tabela de configuração
+    ---------------------------------------------------------------
 
-    IF v_mode IS NULL THEN
-        v_mode := 'production';
-    END IF;
+    SELECT c.valor
+    INTO v_mode
+    FROM plataforma.configuracao c
+    WHERE c.chave = 'environment_mode';
 
+    v_mode := COALESCE(v_mode, 'production');
+
+    ---------------------------------------------------------------
     -- ambiente de desenvolvimento libera tudo
+    ---------------------------------------------------------------
+
     IF v_mode = 'development' THEN
         RETURN;
     END IF;

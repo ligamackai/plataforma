@@ -188,7 +188,6 @@ CREATE TABLE tipo_cargo(
 CREATE TABLE permissao(
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nome          VARCHAR(255) NOT NULL UNIQUE,
-    ordem         INT DEFAULT NULL,
     criado        TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     atualizado    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );

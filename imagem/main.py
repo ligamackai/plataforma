@@ -132,18 +132,39 @@ async def teste(request: Request):
 # /modo -> desenvolvimento <> produção
 # ============================================================
 
+async def set_environment_mode(session: AsyncSession, mode: str):
+    if mode not in ("development", "production"):
+        raise ValueError("Modo inválido")
+
+    await session.execute(
+        text("""
+            INSERT INTO plataforma.configuracao (chave, valor)
+            VALUES ('environment_mode', :mode)
+            ON CONFLICT (chave)
+            DO UPDATE SET
+                valor = EXCLUDED.valor,
+                atualizado_em = NOW()
+        """),
+        {"mode": mode}
+    )
+
+    await session.commit()
+
+
 @app.get("/modo/desenvolvimento")
 async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
     try:
-        sql = text(f'ALTER DATABASE "{DB_NAME}" SET plataforma.environment_mode = \'development\'')
-        await session.execute(sql)
-        await session.commit()
+        await set_environment_mode(session, "development")
+
         return {
             "status": "ok",
-            "message": "Modo desenvolvimento ativado. Novas conexões usarão environment_mode = 'development'."
+            "mode": "development",
+            "message": "Modo desenvolvimento ativado."
         }
+
     except Exception as e:
         await session.rollback()
+
         return {
             "status": "error",
             "message": str(e)
@@ -153,15 +174,17 @@ async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
 @app.get("/modo/producao")
 async def modo_producao(session: AsyncSession = Depends(get_session)):
     try:
-        sql = text(f'ALTER DATABASE "{DB_NAME}" SET plataforma.environment_mode = \'production\'')
-        await session.execute(sql)
-        await session.commit()
+        await set_environment_mode(session, "production")
+
         return {
             "status": "ok",
-            "message": "Modo produção ativado. Novas conexões usarão environment_mode = 'production'."
+            "mode": "production",
+            "message": "Modo produção ativado."
         }
+
     except Exception as e:
         await session.rollback()
+
         return {
             "status": "error",
             "message": str(e)

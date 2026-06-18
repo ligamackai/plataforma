@@ -1168,7 +1168,7 @@ async def reset_db(
 
             raw_url = (
                 "https://raw.githubusercontent.com/"
-                "rafavidal1709/mack-ai-plataforma/main/postgreSQL/"
+                "ligamackai/plataforma/main/SQL/"
                 + quote(name)
             )
 

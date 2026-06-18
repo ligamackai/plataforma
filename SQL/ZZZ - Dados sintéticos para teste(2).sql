@@ -178,10 +178,32 @@ INSERT INTO tipo_cargo (nome, descricao, horas) VALUES
     ('Presidente',  'Responsável máximo pela organização e representação institucional.', 8),
     ('Coordenador', 'Auxilia na gestão estratégica e organização das atividades.', 6);
 
-INSERT INTO concessao (permissao, tipo_cargo, abrangencia) VALUES
-    ('supervisão', 'Supervisor', 'ampla'),
-    ('coordenação', 'Presidente', 'ampla'),
-    ('coordenação', 'Coordenador', 'restrita');
+
+-- ============================
+-- CONCESSÕES
+-- ============================
+
+INSERT INTO concessao (permissao, tipo_cargo, abrangencia)
+SELECT
+    p.id,
+    tc.id,
+    x.abrangencia
+FROM (
+    VALUES
+        ('supervisão',  'Supervisor',  'ampla'),
+        ('coordenação', 'Presidente',  'ampla'),
+        ('coordenação', 'Coordenador', 'restrita')
+) AS x(permissao_nome, tipo_cargo_nome, abrangencia)
+JOIN permissao p
+    ON p.nome = x.permissao_nome
+JOIN tipo_cargo tc
+    ON tc.nome = x.tipo_cargo_nome
+ON CONFLICT DO NOTHING;
+
+
+-- ============================
+-- CARGOS DOS PARTICIPANTES
+-- ============================
   
 INSERT INTO cargo (horas, participante, semestre, tipo, inicio, fim, ativo, confirmado)
 SELECT

@@ -193,6 +193,7 @@ SELECT
 FROM (
     VALUES
         ('supervisão',  'Supervisor',  'ampla'),
+        ('coordenação',  'Supervisor',  'ampla'),
         ('coordenação', 'Presidente',  'ampla'),
         ('coordenação', 'Coordenador', 'restrita')
 ) AS x(permissao_nome, tipo_cargo_nome, abrangencia)

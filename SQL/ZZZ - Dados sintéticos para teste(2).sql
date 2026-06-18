@@ -189,7 +189,7 @@ INSERT INTO concessao (permissao, tipo_cargo, abrangencia)
 SELECT
     p.id,
     tc.id,
-    x.abrangencia
+    x.abrangencia::tipo_abrangencia
 FROM (
     VALUES
         ('supervisão',  'Supervisor',  'ampla'),

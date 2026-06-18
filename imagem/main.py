@@ -127,9 +127,49 @@ async def teste(request: Request):
         "dispositivo": request.state.dispositivo_id
     }
 
+@app.get("/modo/desenvolvimento")
+async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
+    try:
+        await session.execute(
+            text("ALTER DATABASE :dbname SET plataforma.environment_mode = 'development'"),
+            {"dbname": DB_NAME}
+        )
+        await session.commit()
+        return {
+            "status": "ok",
+            "message": "Modo desenvolvimento ativado. Novas conexões usarão environment_mode = 'development'."
+        }
+    except Exception as e:
+        await session.rollback()
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
 # ============================================================
-# /send/code
+# /modo -> desenvolvimento <> produção
 # ============================================================
+
+@app.get("/modo/producao")
+async def modo_producao(session: AsyncSession = Depends(get_session)):
+    try:
+        await session.execute(
+            text("ALTER DATABASE :dbname SET plataforma.environment_mode = 'production'"),
+            {"dbname": DB_NAME}
+        )
+        await session.commit()
+        return {
+            "status": "ok",
+            "message": "Modo produção ativado. Novas conexões usarão environment_mode = 'production'."
+        }
+    except Exception as e:
+        await session.rollback()
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
 
 # ============================================================
 # /send/code

@@ -256,7 +256,7 @@ BEGIN
 END;
 $$;
 
-SET plataforma.environment_mode = 'development';
+ALTER DATABASE postgres SET plataforma.environment_mode = 'development';
 
 CREATE OR REPLACE FUNCTION verificar_permissao(
     p_participante BIGINT,

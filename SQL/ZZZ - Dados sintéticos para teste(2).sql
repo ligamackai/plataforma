@@ -181,7 +181,7 @@ INSERT INTO tipo_cargo (nome, descricao, horas) VALUES
 INSERT INTO concessao (permissao, tipo_cargo, abrangencia) VALUES
     ('supervisão', 'Supervisor', 'ampla'),
     ('coordenação', 'Presidente', 'ampla'),
-    ('coordenação', 'Coordenador', 'restrita')
+    ('coordenação', 'Coordenador', 'restrita');
   
 INSERT INTO cargo (horas, participante, semestre, tipo, inicio, fim, ativo, confirmado)
 SELECT

@@ -174,10 +174,15 @@ DO NOTHING;
 -- ============================
 
 INSERT INTO tipo_cargo (nome, descricao, horas) VALUES
-('supervisor',  'Professores da universidade vinculados ao grupo de estudo.', 0),
-('presidente',  'Responsável máximo pela organização e representação institucional.', 8),
-('coordenador', 'Auxilia na gestão estratégica e organização das atividades.', 6)
+    ('Supervisor',  'Professores da universidade vinculados ao grupo de estudo.', 0),
+    ('Presidente',  'Responsável máximo pela organização e representação institucional.', 8),
+    ('Coordenador', 'Auxilia na gestão estratégica e organização das atividades.', 6);
 
+INSERT INTO concessao (permissao, tipo_cargo, abrangencia) VALUES
+    ('supervisão', 'Supervisor', 'ampla'),
+    ('coordenação', 'Presidente', 'ampla'),
+    ('coordenação', 'Coordenador', 'restrita')
+  
 INSERT INTO cargo (horas, participante, semestre, tipo, inicio, fim, ativo, confirmado)
 SELECT
     c.horas,
@@ -191,13 +196,9 @@ SELECT
 FROM (
 VALUES
 (8, 1, '2024/2', 'presidente', TIMESTAMPTZ '2024-08-01 00:00:00-03', TIMESTAMPTZ '2024-12-20 23:59:59-03'),
-(6, 2, '2024/2', 'coordenador',  TIMESTAMPTZ '2024-08-01 00:00:00-03', TIMESTAMPTZ '2024-12-20 23:59:59-03'),
 (8, 3, '2025/1', 'presidente', TIMESTAMPTZ '2025-03-01 00:00:00-03', TIMESTAMPTZ '2025-07-15 23:59:59-03'),
-(6, 4, '2025/1', 'coordenador',  TIMESTAMPTZ '2025-03-01 00:00:00-03', TIMESTAMPTZ '2025-07-15 23:59:59-03'),
 (8, 5, '2025/2', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
-(6, 6, '2025/2', 'coordenador',  TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
-(8, 7, '2026/1', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03'),
-(6, 8, '2026/1', 'coordenador',  TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03')
+(8, 7, '2026/1', 'presidente', TIMESTAMPTZ '2025-08-01 00:00:00-03', TIMESTAMPTZ '2025-12-20 23:59:59-03')
 ) AS c(horas, participante, semestre_desc, tipo_nome, ini, fim)
 
 JOIN semestre s ON s.descricao = c.semestre_desc

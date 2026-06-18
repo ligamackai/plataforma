@@ -323,7 +323,6 @@ BEGIN
     WHERE
         cg.participante = p_participante
         AND cg.ativo = TRUE
-        AND cg.confirmado = TRUE
         AND (cg.fim IS NULL OR cg.fim > NOW())
         AND cg.inicio <= NOW()
         AND cs.permissao = v_permissao_id

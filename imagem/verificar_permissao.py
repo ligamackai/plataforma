@@ -18,10 +18,7 @@ async def verificar_permissao(
     """
     db = context["db"]
     participante_id = context["request"].state.participante_id
-
-    if not participante_id:
-        return False
-
+    
     try:
         if p_grupo is not None:
             await db.execute(

@@ -10,6 +10,8 @@ CREATE OR REPLACE PROCEDURE vai_apresentar(
 )
 LANGUAGE plpgsql
 AS $procedure$
+DECLARE
+   v_grupo_id BIGINT;
 BEGIN
   -- Buscar o ID do grupo a partir do encontro
   SELECT o.grupo INTO v_grupo_id

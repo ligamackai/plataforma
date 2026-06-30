@@ -12,11 +12,21 @@ LANGUAGE plpgsql
 AS $procedure$
 
 BEGIN
+  -- Buscar o ID do grupo a partir do encontro
+  SELECT o.grupo INTO v_grupo_id
+  FROM encontro e
+  JOIN ocorreu o ON o.id = e.ocorrencia
+  WHERE e.id = in_encontro;
+
+  -- Verificar permissão apenas se for outra pessoa sendo inscrita
+  IF in_executado_por IS DISTINCT FROM in_participante THEN
+      PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+  END IF;
   
   UPDATE apresentou
   SET valido = FALSE
   WHERE participante = in_participante AND encontro = in_encontro;
-
+  
   INSERT INTO log (rotulo, dados)
   VALUES (
     'cancelar_apresentar',                  -- Mesmo nome do procedimento

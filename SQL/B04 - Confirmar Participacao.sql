@@ -16,6 +16,8 @@ DECLARE
    v_encontro       INT;
 
 BEGIN
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    
     SELECT
         confirmado, participante, encontro
     INTO v_estado_atual, v_participante, v_encontro

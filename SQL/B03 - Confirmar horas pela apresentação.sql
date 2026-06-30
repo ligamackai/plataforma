@@ -18,6 +18,8 @@ CREATE OR REPLACE PROCEDURE confirmar_apresentacao(
 LANGUAGE plpgsql
 SET search_path = plataforma
 AS $$
+DECLARE
+   v_grupo_id BIGINT;
 BEGIN
     -- Buscar o ID do grupo a partir da apresentação
     SELECT o.grupo INTO v_grupo_id

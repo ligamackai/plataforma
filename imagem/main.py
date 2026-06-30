@@ -165,6 +165,14 @@ async def set_environment_mode(session: AsyncSession, mode: str):
 @app.get("/modo/desenvolvimento")
 async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
     try:
+        # Verificar permissão de supervisão
+        if os.getenv("PROJECT_MODE", "DEVELOPMENT") == "PRODUCTION" and not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "supervisão"
+        ):
+            return failure("Acesso negado")
+        
         await set_environment_mode(session, "development")
 
         return {
@@ -856,6 +864,14 @@ async def realizar_logout(
 @app.get("/db/procedure/")
 async def listar_procedures(session: AsyncSession = Depends(get_session)):
     try:
+        # Verificar permissão de coordenação
+        if not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "coordenação"
+        ):
+            return failure("Acesso negado")
+        
         sql = text("""
             SELECT
                 p.proname AS name,
@@ -1058,6 +1074,14 @@ async def executar_procedure(
 @app.get("/db/function/")
 async def listar_funcoes(session: AsyncSession = Depends(get_session)):
     try:
+        # Verificar permissão de coordenação
+        if not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "coordenação"
+        ):
+            return failure("Acesso negado")
+        
         sql = text("""
             SELECT
                 p.proname AS name,
@@ -1091,6 +1115,14 @@ async def listar_funcoes(session: AsyncSession = Depends(get_session)):
 @app.get("/db/function/{nome}")
 async def executar_funcao(nome: str, session: AsyncSession = Depends(get_session)):
     try:
+        # Verificar permissão de coordenação
+        if not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "coordenação"
+        ):
+            return failure("Acesso negado")
+        
         nome = validate_identifier(nome)
 
         exists_sql = text("""
@@ -1120,6 +1152,14 @@ async def executar_funcao(nome: str, session: AsyncSession = Depends(get_session
 @app.get("/db/table/")
 async def listar_tabelas(session: AsyncSession = Depends(get_session)):
     try:
+        # Verificar permissão de coordenação
+        if not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "coordenação"
+        ):
+            return failure("Acesso negado")
+        
         sql = text("""
             SELECT
                 c.relname AS table_name,
@@ -1152,6 +1192,14 @@ async def listar_tabela(
     session: AsyncSession = Depends(get_session),
 ):
     try:
+        # Verificar permissão de coordenação
+        if not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "coordenação"
+        ):
+            return failure("Acesso negado")
+        
         nome = validate_identifier(nome)
 
         exists_sql = text("""
@@ -1209,6 +1257,14 @@ async def reset_db(
     )
 
     try:
+        # Verificar permissão de coordenação
+        if not await verificar_permissao(
+            session,
+            request.state.participante_id,
+            "coordenação"
+        ):
+            return failure("Acesso negado")
+        
         # 1. Buscar lista de arquivos no GitHub
         with urlopen(GITHUB_SQL_DIR_URL) as resp:
             files = json.load(resp)

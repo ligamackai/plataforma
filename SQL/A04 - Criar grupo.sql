@@ -13,6 +13,9 @@ LANGUAGE plpgsql
 SET search_path = plataforma
 AS $$
 BEGIN
+  -- Verificar permissão
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+  
   IF in_tipo IS NULL THEN       -- criar a condicional, pois o valor padrão não é NULL na arquitetura da tabela
     INSERT INTO plataforma.grupo (nome, descricao)
     VALUES (

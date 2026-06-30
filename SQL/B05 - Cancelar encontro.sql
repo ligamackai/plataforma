@@ -10,6 +10,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   v_valido_atual    BOOLEAN;
+  v_grupo_id BIGINT;
 
 BEGIN
     -- Buscar o ID do grupo a partir do encontro

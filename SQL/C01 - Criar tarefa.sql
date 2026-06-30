@@ -18,6 +18,7 @@ LANGUAGE plpgsql
 AS $procedure$
 DECLARE
   v_inicio TIMESTAMPTZ;
+  v_grupo_id BIGINT;
 BEGIN
   -- Buscar o ID do grupo a partir da ocorrência
   SELECT o.grupo INTO v_grupo_id

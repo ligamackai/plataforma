@@ -10,7 +10,8 @@ CREATE OR REPLACE PROCEDURE confirmar_execucao(
 )
 LANGUAGE plpgsql
 AS $procedure$
-
+DECLARE
+    v_grupo_id BIGINT;
 BEGIN
   -- Buscar o ID do grupo a partir da execução
   SELECT o.grupo INTO v_grupo_id

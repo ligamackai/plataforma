@@ -19,6 +19,7 @@ SET search_path = plataforma
 AS $$
 DECLARE
   v_fim TIMESTAMPTZ := NULL;
+  v_grupo_id BIGINT;
 BEGIN
   -- Buscar o ID do grupo a partir da ocorrência
   SELECT grupo INTO v_grupo_id

@@ -163,7 +163,7 @@ async def set_environment_mode(session: AsyncSession, mode: str):
 
 
 @app.get("/modo/desenvolvimento")
-async def modo_desenvolvimento(session: AsyncSession = Depends(get_session)):
+async def modo_desenvolvimento(request: Request, session: AsyncSession = Depends(get_session)):
     try:
         # Verificar permissão de supervisão
         if os.getenv("PROJECT_MODE", "DEVELOPMENT") == "PRODUCTION" and not await verificar_permissao(
@@ -862,7 +862,7 @@ async def realizar_logout(
 # ============================================================
 
 @app.get("/db/procedure/")
-async def listar_procedures(session: AsyncSession = Depends(get_session)):
+async def listar_procedures(request: Request, session: AsyncSession = Depends(get_session)):
     try:
         # Verificar permissão de coordenação
         if not await verificar_permissao(
@@ -1072,7 +1072,7 @@ async def executar_procedure(
 # ============================================================
 
 @app.get("/db/function/")
-async def listar_funcoes(session: AsyncSession = Depends(get_session)):
+async def listar_funcoes(request: Request, session: AsyncSession = Depends(get_session)):
     try:
         # Verificar permissão de coordenação
         if not await verificar_permissao(
@@ -1113,7 +1113,7 @@ async def listar_funcoes(session: AsyncSession = Depends(get_session)):
 
 
 @app.get("/db/function/{nome}")
-async def executar_funcao(nome: str, session: AsyncSession = Depends(get_session)):
+async def executar_funcao(nome: str, request: Request,  session: AsyncSession = Depends(get_session)):
     try:
         # Verificar permissão de coordenação
         if not await verificar_permissao(
@@ -1150,7 +1150,7 @@ async def executar_funcao(nome: str, session: AsyncSession = Depends(get_session
 # ============================================================
 
 @app.get("/db/table/")
-async def listar_tabelas(session: AsyncSession = Depends(get_session)):
+async def listar_tabelas(request: Request, session: AsyncSession = Depends(get_session)):
     try:
         # Verificar permissão de coordenação
         if not await verificar_permissao(
@@ -1189,6 +1189,7 @@ async def listar_tabelas(session: AsyncSession = Depends(get_session)):
 async def listar_tabela(
     nome: str,
     limit: Optional[int] = None,
+    request: Request, 
     session: AsyncSession = Depends(get_session),
 ):
     try:
@@ -1245,6 +1246,7 @@ async def listar_tabela(
 @app.get("/db/reset")
 async def reset_db(
     vazio: bool = False,
+    request: Request, 
 ):
     """
     Reseta o banco executando todos os .sql do repositório.

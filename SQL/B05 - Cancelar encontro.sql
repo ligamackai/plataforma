@@ -12,6 +12,15 @@ DECLARE
   v_valido_atual    BOOLEAN;
 
 BEGIN
+    -- Buscar o ID do grupo a partir do encontro
+    SELECT o.grupo INTO v_grupo_id
+    FROM encontro e
+    JOIN ocorreu o ON o.id = e.ocorrencia
+    WHERE e.id = in_encontro_id;
+
+    -- Verificar permissão de coordenação para este grupo
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+    
     SELECT
         valido
         INTO v_valido_atual

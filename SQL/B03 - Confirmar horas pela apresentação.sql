@@ -19,7 +19,15 @@ LANGUAGE plpgsql
 SET search_path = plataforma
 AS $$
 BEGIN
-    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    -- Buscar o ID do grupo a partir da apresentação
+    SELECT o.grupo INTO v_grupo_id
+    FROM apresentou a
+    JOIN encontro e ON e.id = a.encontro
+    JOIN ocorreu o ON o.id = e.ocorrencia
+    WHERE a.id = in_apresentou_id;
+
+    -- Verificar permissão de coordenação para este grupo
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
     
     IF in_horas IS NOT NULL AND in_horas < 0 THEN
         RAISE EXCEPTION 'O valor de horas não pode ser negativo.';

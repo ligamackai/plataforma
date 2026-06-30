@@ -14,6 +14,7 @@ DECLARE
 
    v_participante     INT;
    v_encontro       INT;
+   v_grupo_id BIGINT;
 
 BEGIN
     -- Buscar o ID do grupo a partir da participação

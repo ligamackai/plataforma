@@ -651,17 +651,16 @@ async def realizar_cadastro(
             tipo_supervisor = row_tipo.scalar()
             
             if tipo_supervisor:
-                if semestre_atual:
-                    await session.execute(
-                        text("""
-                        INSERT INTO plataforma.cargo (tipo, participante)
-                        VALUES (:tipo, :participante)
-                        """),
-                        {
-                            "tipo": tipo_supervisor,
-                            "participante": participante_id
-                        }
-                    )
+                await session.execute(
+                    text("""
+                    INSERT INTO plataforma.cargo (tipo, participante)
+                    VALUES (:tipo, :participante)
+                    """),
+                    {
+                        "tipo": tipo_supervisor,
+                        "participante": participante_id
+                    }
+                )
 
         await session.commit()
 

@@ -36,7 +36,7 @@ BEGIN
 
   INSERT INTO log (rotulo, dados)
   VALUES (
-    'nome_da_procedure',                  -- Mesmo nome do procedimento
+    'encerrar_cargo',                  -- Mesmo nome do procedimento
     jsonb_build_object(
       'executado_por', in_executado_por,
       'cargo',        in_cargo,

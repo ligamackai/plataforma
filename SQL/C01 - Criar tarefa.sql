@@ -19,6 +19,14 @@ AS $procedure$
 DECLARE
   v_inicio TIMESTAMPTZ;
 BEGIN
+  -- Buscar o ID do grupo a partir da ocorrência
+  SELECT o.grupo INTO v_grupo_id
+  FROM ocorreu o
+  WHERE o.id = in_ocorrencia;
+
+  -- Verificar permissão de coordenação para este grupo
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+  
   IF in_horas < 0 THEN
     RAISE EXCEPTION 'A quantidade de horas nao pode ser negativa';
   END IF;

@@ -11,7 +11,17 @@ CREATE OR REPLACE PROCEDURE vai_apresentar(
 LANGUAGE plpgsql
 AS $procedure$
 BEGIN
-    -- ... suas operações aqui ...
+  -- Buscar o ID do grupo a partir do encontro
+  SELECT o.grupo INTO v_grupo_id
+  FROM encontro e
+  JOIN ocorreu o ON o.id = e.ocorrencia
+  WHERE e.id = in_encontro;
+
+  -- Verificar permissão apenas se for outra pessoa sendo inscrita
+  IF in_executado_por IS DISTINCT FROM in_participante THEN
+      PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+  END IF;
+  
   INSERT INTO apresentou (participante, encontro)
   VALUES (in_participante, in_encontro);
 

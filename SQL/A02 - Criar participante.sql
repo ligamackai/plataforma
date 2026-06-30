@@ -11,6 +11,7 @@ AS $$
 DECLARE
   v_ra   text;
   v_nome text;
+  v_grupo_id BIGINT;
 BEGIN
   -- Verificar permissão
   PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');

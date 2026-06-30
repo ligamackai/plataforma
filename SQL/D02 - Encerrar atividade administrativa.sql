@@ -13,6 +13,8 @@ AS $procedure$
 DECLARE
   
 BEGIN
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+  
   IF in_horas < 0 THEN
     RAISE EXCEPTION 'A quantidade de horas nao pode ser negativa';
   END IF;

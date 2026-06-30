@@ -15,6 +15,8 @@ DECLARE
     semestre_ocorreu INT;
     tipo_id BIGINT;
 BEGIN
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    
     -- Buscar o ID do tipo_cargo pelo nome
     SELECT id INTO tipo_id FROM tipo_cargo WHERE nome = in_tipo;
 

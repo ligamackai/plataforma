@@ -12,6 +12,8 @@ CREATE OR REPLACE PROCEDURE criar_grupo(
 LANGUAGE plpgsql
 SET search_path = plataforma
 AS $$
+DECLARE
+   v_grupo_id BIGINT;
 BEGIN
   -- Verificar permissão
   PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');

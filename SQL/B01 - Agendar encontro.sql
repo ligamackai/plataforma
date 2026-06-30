@@ -12,7 +12,8 @@ CREATE OR REPLACE PROCEDURE agendar_encontro(
   IN in_inicio        TIMESTAMPTZ,
   IN in_fim           TIMESTAMPTZ,
   IN in_tema          VARCHAR(255),
-  IN in_resumo        TEXT DEFAULT NULL
+  IN in_resumo        TEXT DEFAULT NULL,
+  IN in_video         VARCHAR(255) DEFAULT NULL   -- NOVO
 )
 LANGUAGE plpgsql
 SET search_path = plataforma
@@ -43,24 +44,20 @@ BEGIN
     RAISE EXCEPTION 'O horário de término não pode ser mais de 6 horas após início';
   END IF;
 
-  IF in_resumo IS NULL THEN                                             -- Neste caso esse IF não era necessário, mas fique atento ao valor DEFAULT da tabela.
-    INSERT INTO plataforma.encontro (ocorrencia, inicio, fim, tema)     -- Se o valor DEFAULT da tabela **não** for NULL este IF é necessário.
-    VALUES (in_ocorrencia, in_inicio, v_fim, in_tema);
-  ELSE
-    INSERT INTO plataforma.encontro (ocorrencia, inicio, fim, tema, resumo)   -- Veja que o in_executado_por não entra aqui
-    VALUES (in_ocorrencia, in_inicio, v_fim, in_tema, in_resumo);
-  END IF;
+  INSERT INTO plataforma.encontro (ocorrencia, inicio, fim, tema, resumo, video)
+  VALUES (in_ocorrencia, in_inicio, v_fim, in_tema, in_resumo, in_video);
 
   INSERT INTO plataforma.log (rotulo, dados)
   VALUES (
-    'agendar_encontro',                     -- Mesmo nome do procedimento
+    'agendar_encontro',
     jsonb_build_object(
       'executado_por', in_executado_por,
       'ocorrencia',    in_ocorrencia,
       'inicio',        in_inicio,
       'fim',           in_fim,
       'tema',          in_tema,
-      'resumo',        in_resumo            -- Os parâmetros opcionais devem ser incluídos aqui
+      'resumo',        in_resumo,
+      'video',         in_video
     )
   );
 END;

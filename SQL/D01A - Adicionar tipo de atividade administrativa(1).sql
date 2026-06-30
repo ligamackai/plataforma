@@ -11,6 +11,7 @@ CREATE OR REPLACE PROCEDURE adicionar_tipo_cargo(
 LANGUAGE plpgsql
 AS $procedure$
 BEGIN
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
   IF in_horas IS NOT NULL AND in_horas < 0 THEN
     RAISE EXCEPTION 'A quantidade de horas nao pode ser negativa';
   END IF;

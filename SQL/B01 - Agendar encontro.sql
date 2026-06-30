@@ -20,6 +20,14 @@ AS $$
 DECLARE
   v_fim TIMESTAMPTZ := NULL;
 BEGIN
+  -- Buscar o ID do grupo a partir da ocorrência
+  SELECT grupo INTO v_grupo_id
+  FROM ocorreu
+  WHERE id = in_ocorrencia;
+
+  -- Verificar permissão de coordenação para este grupo específico
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+  
   IF in_inicio IS NULL THEN
     RAISE EXCEPTION 'O horário de início não pode ser nulo';
   ELSIF in_fim IS NULL THEN

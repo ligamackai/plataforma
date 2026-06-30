@@ -10,10 +10,7 @@ CREATE OR REPLACE PROCEDURE criar_ocorrencia(
 )
 LANGUAGE plpgsql
 AS $$
-DECLARE
-   v_grupo_id BIGINT;
 BEGIN
-  
     -- Verificar permissão
     PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
 

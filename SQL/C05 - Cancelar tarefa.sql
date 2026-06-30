@@ -11,7 +11,18 @@ CREATE OR REPLACE PROCEDURE cancelar_tarefa(
 )
 LANGUAGE plpgsql
 AS $procedure$
+DECLARE
+    v_grupo_id BIGINT;
 BEGIN
+    -- Buscar o ID do grupo a partir da tarefa
+    SELECT o.grupo INTO v_grupo_id
+    FROM tarefa t
+    JOIN ocorreu o ON o.id = t.ocorrencia
+    WHERE t.id = in_tarefa_id;
+
+    -- Verificar permissão de coordenação para este grupo
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+
     --------------------------------------------------------------------
     -- 1. Cancelar a tarefa (valido = FALSE)
     --------------------------------------------------------------------

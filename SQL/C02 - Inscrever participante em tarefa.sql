@@ -15,7 +15,18 @@ DECLARE
   v_replica_contador INT;
   v_horas_tarefa INT;
   v_ja_inscrito BOOLEAN;
+  v_grupo_id BIGINT;
 BEGIN
+    -- Buscar o ID do grupo a partir da tarefa
+    SELECT o.grupo INTO v_grupo_id
+    FROM tarefa t
+    JOIN ocorreu o ON o.id = t.ocorrencia
+    WHERE t.id = in_tarefa;
+
+    -- Verificar permissão apenas se for outra pessoa sendo inscrita
+    IF in_executado_por IS DISTINCT FROM in_participante THEN
+        PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
+    END IF;
 
     SELECT EXISTS(
     SELECT 1 FROM executou

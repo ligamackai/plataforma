@@ -11,6 +11,7 @@ CREATE OR REPLACE PROCEDURE criar_ocorrencia(
 LANGUAGE plpgsql
 AS $$
 DECLARE
+   v_grupo_id BIGINT;
 BEGIN
   
     -- Verificar permissão

@@ -16,7 +16,15 @@ DECLARE
    v_encontro       INT;
 
 BEGIN
-    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    -- Buscar o ID do grupo a partir da participação
+    SELECT o.grupo INTO v_grupo_id
+    FROM participou p
+    JOIN encontro e ON e.id = p.encontro
+    JOIN ocorreu o ON o.id = e.ocorrencia
+    WHERE p.id = in_participou_id;
+
+    -- Verificar permissão de coordenação para este grupo
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação', v_grupo_id);
     
     SELECT
         confirmado, participante, encontro

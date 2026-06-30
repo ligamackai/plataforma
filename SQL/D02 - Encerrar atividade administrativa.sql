@@ -10,8 +10,6 @@ CREATE OR REPLACE PROCEDURE encerrar_cargo(
 )
 LANGUAGE plpgsql
 AS $procedure$
-DECLARE
-  
 BEGIN
   PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
   

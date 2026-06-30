@@ -12,6 +12,9 @@ DECLARE
   v_ra   text;
   v_nome text;
 BEGIN
+  -- Verificar permissão
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+
   -- Normalização básica (não altera conteúdo interno)
   v_ra   := btrim(in_ra);
   v_nome := btrim(in_nome);

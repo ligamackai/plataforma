@@ -11,6 +11,9 @@ DECLARE
   v_ano INT;
   v_p   INT;
 BEGIN
+  -- Verificar permissão
+  PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+  
   -- Checagens de nulidade e formato
   IF in_descricao IS NULL THEN
     RAISE EXCEPTION 'Descrição não pode ser NULL. Use o formato YYYY/P (ex.: 2025/2).' USING ERRCODE = '22004';

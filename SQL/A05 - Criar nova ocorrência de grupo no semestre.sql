@@ -12,7 +12,10 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
 BEGIN
-    -- ... suas operações aqui ...
+  
+    -- Verificar permissão
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+
     -- Inserir na tabela 'ocorreu'
     INSERT INTO ocorreu (semestre, grupo)
     VALUES (in_semestre, in_grupo)

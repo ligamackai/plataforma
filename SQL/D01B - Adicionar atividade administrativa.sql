@@ -15,7 +15,12 @@ DECLARE
     semestre_ocorreu INT;
     tipo_id BIGINT;
 BEGIN
-    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    -- Verificar permissão: se for supervisor, exige supervisao; caso contrário, coordenacao
+    IF in_tipo = 'supervisor' THEN
+        PERFORM plataforma.verificar_permissao(in_executado_por, 'supervisao');
+    ELSE
+        PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    END IF;
     
     -- Buscar o ID do tipo_cargo pelo nome
     SELECT id INTO tipo_id FROM tipo_cargo WHERE nome = in_tipo;

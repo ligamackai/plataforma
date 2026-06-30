@@ -19,6 +19,8 @@ LANGUAGE plpgsql
 SET search_path = plataforma
 AS $$
 BEGIN
+    PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
+    
     IF in_horas IS NOT NULL AND in_horas < 0 THEN
         RAISE EXCEPTION 'O valor de horas não pode ser negativo.';
     END IF;

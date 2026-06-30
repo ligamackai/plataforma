@@ -80,9 +80,20 @@ def verificar_senha(senha_digitada: str, senha_db: str):
 async def verificar_permissao(
     session: AsyncSession,
     p_participante: int,
-    p_permissao: int,
+    p_permissao: str,
     p_grupo: Optional[int] = None,
 ) -> bool:
+    """
+    Verifica se um participante tem uma determinada permissão.
+    Versão para usar nos endpoints do main.py (recebe session e participante_id diretamente).
+    
+    session: Sessão SQLAlchemy
+    p_participante: ID do participante
+    p_permissao: Nome da permissão (string, ex: 'coordenação')
+    p_grupo: ID do grupo (opcional, para abrangência restrita)
+    
+    Retorna True se permitido, False caso contrário.
+    """
     try:
         if p_grupo is not None:
             await session.execute(

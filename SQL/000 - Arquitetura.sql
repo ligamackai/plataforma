@@ -206,7 +206,7 @@ CREATE TABLE cargo(
     horas         INT DEFAULT NULL,
     tipo          BIGINT NOT NULL REFERENCES tipo_cargo(id),
     participante  BIGINT NOT NULL REFERENCES participante(id),
-    semestre      BIGINT NOT NULL REFERENCES semestre(id),
+    semestre      BIGINT DEFAULT NULL REFERENCES semestre(id),
     ocorrencia    INT DEFAULT NULL REFERENCES ocorreu(id),    -- Usado caso o cargo seja um coordenador de um grupo
     inicio        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     fim           TIMESTAMPTZ DEFAULT NULL,

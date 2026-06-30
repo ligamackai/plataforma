@@ -17,7 +17,7 @@ DECLARE
 BEGIN
     -- Verificar permissão: se for supervisor, exige supervisao; caso contrário, coordenacao
     IF in_tipo = 'supervisor' THEN
-        PERFORM plataforma.verificar_permissao(in_executado_por, 'supervisao');
+        PERFORM plataforma.verificar_permissao(in_executado_por, 'supervisão');
     ELSE
         PERFORM plataforma.verificar_permissao(in_executado_por, 'coordenação');
     END IF;

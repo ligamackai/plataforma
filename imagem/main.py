@@ -642,6 +642,27 @@ async def realizar_cadastro(
             }
         )
 
+        # Se for professor (@mackenzie.br), atribuir cargo de supervisor automaticamente
+        if email_destino.endswith('@mackenzie.br'):
+            # Buscar o ID do tipo_cargo "supervisor"
+            row_tipo = await session.execute(
+                text("SELECT id FROM plataforma.tipo_cargo WHERE nome = 'supervisor' LIMIT 1")
+            )
+            tipo_supervisor = row_tipo.scalar()
+            
+            if tipo_supervisor:
+                if semestre_atual:
+                    await session.execute(
+                        text("""
+                        INSERT INTO plataforma.cargo (tipo, participante)
+                        VALUES (:tipo, :participante)
+                        """),
+                        {
+                            "tipo": tipo_supervisor,
+                            "participante": participante_id
+                        }
+                    )
+
         await session.commit()
 
         return {
